@@ -23,5 +23,11 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+# ============
+# PRINT SOME INFO
+# ============
+message("===== miniDPI =====")
+message("Build type: ${CMAKE_BUILD_TYPE}")
+message("Version: ${PROJECT_VERSION}")
 
 add_subdirectory(src)
