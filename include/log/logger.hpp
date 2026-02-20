@@ -10,7 +10,7 @@
 #include <mutex>
 #include <string>
 
-namespace log {
+namespace logger {
 enum class LogLevel {
   TRACE,
   DEBUG,
@@ -20,45 +20,9 @@ enum class LogLevel {
   CRITICAL,
 };
 
-std::string to_string(LogLevel level) {
-  switch (level) {
-  case LogLevel::TRACE:
-    return "TRACE";
-  case LogLevel::DEBUG:
-    return "DEBUG";
-  case LogLevel::INFO:
-    return "INFO";
-  case LogLevel::WARNING:
-    return "WARNING";
-  case LogLevel::ERROR:
-    return "ERROR";
-  case LogLevel::CRITICAL:
-    return "CRITICAL";
-  default:
-    return "TRACE";
-  }
-}
+std::string to_string(LogLevel level);
+LogLevel from_string(const std::string &str);
 
-LogLevel from_string(const std::string &str) {
-  std::string lower_case(str.size(), ' ');
-  std::transform(str.begin(), str.end(), lower_case.begin(),
-                 [](char ch) { return std::tolower(ch); });
-
-  if (lower_case == "trace")
-    return LogLevel::TRACE;
-  else if (lower_case == "debug")
-    return LogLevel::DEBUG;
-  else if (lower_case == "info")
-    return LogLevel::INFO;
-  else if (lower_case == "warning")
-    return LogLevel::WARNING;
-  else if (lower_case == "error")
-    return LogLevel::ERROR;
-  else if (lower_case == "critical")
-    return LogLevel::CRITICAL;
-  else
-    return LogLevel::INFO;
-}
 class Logger {
 public:
   static Logger *get_instance() {
@@ -75,7 +39,6 @@ public:
   }
 
   template <typename... Args> void info(std::string_view fmt, Args &&...args) {
-
     write_message(LogLevel::INFO, fmt, std::forward<Args>(args)...);
   }
 
@@ -92,14 +55,7 @@ public:
   }
 
   void set_level(LogLevel level) { log_level_ = level; }
-  void set_level_from_env(std::string env) {
-    char const *val = std::getenv(env.c_str());
-    if (val == nullptr) {
-      set_level(LogLevel::INFO);
-    } else {
-      set_level(from_string(val));
-    }
-  }
+  void set_level_from_env(std::string env);
 
 private:
   template <typename... Args>
@@ -120,11 +76,11 @@ private:
   std::mutex mtx_;
   LogLevel log_level_{LogLevel::INFO};
 };
-} // namespace log
-#define LOG_TRACE(...) ::log::Logger::get_instance()->trace(__VA_ARGS__)
-#define LOG_DEBUG(...) ::log::Logger::get_instance()->debug(__VA_ARGS__)
-#define LOG_INFO(...) ::log::Logger::get_instance()->info(__VA_ARGS__)
-#define LOG_WARNING(...) ::log::Logger::get_instance()->warning(__VA_ARGS__)
-#define LOG_ERROR(...) ::log::Logger::get_instance()->error(__VA_ARGS__)
-#define LOG_CRITICAL(...) ::log::Logger::get_instance()->critical(__VA_ARGS__)
+} // namespace logger
+#define LOG_TRACE(...) ::logger::Logger::get_instance()->trace(__VA_ARGS__)
+#define LOG_DEBUG(...) ::logger::Logger::get_instance()->debug(__VA_ARGS__)
+#define LOG_INFO(...) ::logger::Logger::get_instance()->info(__VA_ARGS__)
+#define LOG_WARNING(...) ::logger::Logger::get_instance()->warning(__VA_ARGS__)
+#define LOG_ERROR(...) ::logger::Logger::get_instance()->error(__VA_ARGS__)
+#define LOG_CRITICAL(...) ::logger::Logger::get_instance()->critical(__VA_ARGS__)
 #endif
