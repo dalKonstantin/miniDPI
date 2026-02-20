@@ -30,4 +30,9 @@ message("===== miniDPI =====")
 message("Build type: ${CMAKE_BUILD_TYPE}")
 message("Version: ${PROJECT_VERSION}")
 
+
+# ============
+# FIND PACKAGES
+# ============
+
 add_subdirectory(src)
