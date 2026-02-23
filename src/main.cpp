@@ -1,19 +1,18 @@
-#include "core/ring_buffer.hpp"
 #include "log/logger.hpp"
-#include <iostream>
 #include <pcap/pcap.h>
-#include <thread>
+#include <stdexcept>
+#include <sys/types.h>
+#include <unistd.h>
 
 int main() {
-  char errbuf[PCAP_ERRBUF_SIZE];
-  pcap_if_t* all_devs;
+  try {
+    LOG_INFO("Starting miniDPI");
 
-  if (pcap_findalldevs(&all_devs, errbuf) == -1) {
-    LOG_ERROR("Error finding devices: {}", errbuf);
-    return 1;
+    if (getuid() != 0) {
+      throw std::runtime_error("Root privileges required. Please run it with sudo.");
+    }
+  } catch (const std::runtime_error& e) {
+    LOG_CRITICAL("Runtime Error: {}", e.what());
   }
-
-  LOG_INFO("libpcap linked");
-  pcap_freealldevs(all_devs);
   return 0;
 }
