@@ -12,6 +12,7 @@ add_library(${PROJECT_NAME}::logger_lib ALIAS logger_lib)
 # ============
 add_library(core_lib
   core/ring_buffer.cpp
+  core/sniffer.cpp
 )
 
 target_include_directories(core_lib PUBLIC ${CMAKE_SOURCE_DIR}/include)
