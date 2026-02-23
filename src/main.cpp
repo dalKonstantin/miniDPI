@@ -1,7 +1,6 @@
 #include "core/ring_buffer.hpp"
 #include "log/logger.hpp"
 #include <iostream>
-#include <pcap.h>
 #include <pcap/pcap.h>
 #include <thread>
 
