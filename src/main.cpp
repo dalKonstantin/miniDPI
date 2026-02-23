@@ -1,20 +1,20 @@
 #include "core/ring_buffer.hpp"
 #include "log/logger.hpp"
 #include <iostream>
+#include <pcap.h>
+#include <pcap/pcap.h>
+#include <thread>
+
 int main() {
-  logger::Logger::get_instance()->set_level_from_env("A_LOG");
+  char errbuf[PCAP_ERRBUF_SIZE];
+  pcap_if_t* all_devs;
 
-  LOG_INFO("Starting miniDPI");
-
-  auto rb = core::RingBuffer<int>(16);
-
-  for (std::size_t i = 0; i < 16; ++i) {
-    if (rb.push(i))
-      LOG_TRACE("Pushed {} to RingBuffer. Size {}", i, rb.size());
+  if (pcap_findalldevs(&all_devs, errbuf) == -1) {
+    LOG_ERROR("Error finding devices: {}", errbuf);
+    return 1;
   }
 
-  for (std::size_t i = 0; i < 16; ++i) {
-    auto x = rb.pop();
-    LOG_TRACE("Poped {} from RingBuffer", *x);
-  }
+  LOG_INFO("libpcap linked");
+  pcap_freealldevs(all_devs);
+  return 0;
 }

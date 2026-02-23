@@ -24,4 +24,5 @@ add_executable(${PROJECT_NAME} main.cpp)
 target_link_libraries(${PROJECT_NAME} PRIVATE
   miniDPI::logger_lib
   miniDPI::core_lib
+  ${PCAP_LIBRARIES}
 )

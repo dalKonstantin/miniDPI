@@ -1,6 +1,7 @@
 #ifndef RING_BUFFER_HPP
 #define RING_BUFFER_HPP
 
+#include <algorithm>
 #include <atomic>
 #include <cstddef>
 #include <exception>
@@ -10,53 +11,74 @@
 
 #include "log/logger.hpp"
 
+// =====SPSC Lock-free RingBuffer=====
 namespace core {
 template <typename T> class RingBuffer {
 public:
-  RingBuffer(std::size_t capacity) : capacity_(capacity), size_(0), head_(0), tail_(0) {
+  RingBuffer(std::size_t capacity) : capacity_(capacity), head_(0), tail_(0), buffer_(capacity_) {
     LOG_TRACE("Creating RingBuffer with capacity: {}", capacity);
-    if (capacity_ == 0) {
-      throw std::invalid_argument("Capacity cannot be 0");
+    if (capacity_ < 2) {
+      throw std::invalid_argument("Capacity must be  >= 2 for SPSC ringbuffer");
     }
-    buffer_.resize(capacity_);
   }
 
-  bool is_empty() const noexcept { return size_ == 0; };
-  bool is_full() const noexcept { return size_ == capacity_; }
-  std::size_t size() const noexcept { return size_; }
-
-  bool push(T val) noexcept {
+  bool push(const T& val) noexcept {
     // buff[tail % capacity] = val
     // tail = tail + 1
     // size + 1
 
-    auto current_tail = head_.load(std::memory_order_relaxed);
-    auto next_tail = (current_tail + 1) % capacity_;
-    auto current_head = head_.load(std::memory_order_acquire);
-    if (next_tail == current_head) {
+    const auto tail = tail_.load(std::memory_order_relaxed);
+    const auto next = inc(tail);
+
+    if (next == head_.load(std::memory_order_acquire)) {
       return false;
     }
 
-    buffer_[current_tail] = val;
+    buffer_[tail] = val;
 
-    ++size_;
-    tail_.store(next_tail, std::memory_order_release);
+    tail_.store(next, std::memory_order_release);
     return true;
   }
 
-  std::optional<T> pop() noexcept {
-    // current_head = head
-    // head = (head + 1) % capacity
-    // size - 1
-    // return buffer[head]
+  // Producer Method
+  bool push(T&& val) noexcept {
+    // buff[tail % capacity] = val
+    // tail = tail + 1
+    // size + 1
 
-    auto current_tail = tail_.load(std::memory_order::relaxed);
-    auto current_head = head_.load(std::memory_order::acquire);
+    const auto tail = tail_.load(std::memory_order_relaxed);
+    const auto next = inc(tail);
+
+    if (next == head_.load(std::memory_order_acquire)) {
+      return false;
+    }
+
+    buffer_[tail] = std::move(val);
+
+    tail_.store(next, std::memory_order_release);
+    return true;
+  }
+
+  // Consumer method
+  std::optional<T> pop() noexcept {
+    const auto head = head_.load(std::memory_order_relaxed);
+
+    if (head == tail_.load(std::memory_order_acquire)) {
+      return std::nullopt;
+    }
+
+    T value = std::move(buffer_[head]);
+
+    head_.store(inc(head), std::memory_order_release);
+    return value;
   }
 
 private:
+  std::size_t inc(std::size_t i) const noexcept {
+    ++i;
+    return (i == capacity_) ? 0 : i;
+  }
   alignas(64) std::atomic<std::size_t> capacity_;
-  alignas(64) std::atomic<std::size_t> size_;
   alignas(64) std::atomic<std::size_t> head_;
   alignas(64) std::atomic<std::size_t> tail_;
   alignas(64) std::vector<T> buffer_;
