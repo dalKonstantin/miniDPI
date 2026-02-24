@@ -1,7 +1,9 @@
 #include "CLI11/CLI11.hpp"
+#include "core/cli_parser.cpp"
 #include "log/logger.hpp"
 #include <pcap/pcap.h>
 #include <stdexcept>
+#include <string>
 #include <sys/types.h>
 #include <unistd.h>
 
