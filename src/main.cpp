@@ -1,10 +1,11 @@
+#include "CLI11/CLI11.hpp"
 #include "log/logger.hpp"
 #include <pcap/pcap.h>
 #include <stdexcept>
 #include <sys/types.h>
 #include <unistd.h>
 
-int main() {
+int main(int argc, char** argv) {
   try {
     LOG_INFO("Starting miniDPI");
 

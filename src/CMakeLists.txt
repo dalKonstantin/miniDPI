@@ -19,11 +19,18 @@ target_include_directories(core_lib PUBLIC ${CMAKE_SOURCE_DIR}/include)
 add_library(${PROJECT_NAME}::core_lib ALIAS core_lib)
 
 # ============
+# CLI11
+# ============
+add_library(CLI11 INTERFACE)
+target_include_directories(CLI11 INTERFACE ${CMAKE_SOURCE_DIR}/third_party/CLI11/include)
+add_library(${PROJECT_NAME}::CLI11 ALIAS CLI11)
+# ============
 # EXECUTABLE
 # ============
 add_executable(${PROJECT_NAME} main.cpp)
 target_link_libraries(${PROJECT_NAME} PRIVATE
-  miniDPI::logger_lib
-  miniDPI::core_lib
+  ${PROJECT_NAME}::logger_lib
+  ${PROJECT_NAME}::core_lib
+  ${PROJECT_NAME}::CLI11
   ${PCAP_LIBRARIES}
 )
