@@ -1,6 +1,7 @@
 #include "CLI11/CLI11.hpp"
 #include "core/cli_parser.cpp"
 #include "core/cli_parser.hpp"
+#include "core/sniffer.hpp"
 #include "log/logger.hpp"
 #include <pcap/pcap.h>
 #include <stdexcept>
@@ -20,6 +21,8 @@ int main(int argc, char** argv) {
     cli.parse();
     auto config = cli.get_config();
     std::cout << config.interface << "\n";
+
+    core::Sniffer(config.interface);
 
   } catch (const std::runtime_error& e) {
     LOG_CRITICAL("Runtime Error: {}", e.what());

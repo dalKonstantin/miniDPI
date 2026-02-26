@@ -8,7 +8,6 @@ CLIParser::CLIParser(int argc, char** argv) : argc_(argc), argv_(argv) {};
 bool CLIParser::parse() {
   CLI::App app("miniDPI");
   argv_ = app.ensure_utf8(argv_);
-  std::string dev_name = "default";
   app.add_option("-i,--interface", config_.interface, "Interface name")->required(true);
 
   try {
